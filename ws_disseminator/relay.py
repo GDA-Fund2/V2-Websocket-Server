@@ -1,8 +1,10 @@
 import websockets
 import asyncio
+import itertools
 
 from .logger import log, slog
 from .kafka_consumers import async_kafka
+from .constants import EXCHANGES, FEEDS
 
 # {topic_id: KafkaConsumer}
 broadcaster_lock = asyncio.Lock()
@@ -21,11 +23,6 @@ n_published = 0
 connected_lock = asyncio.Lock()
 active_subscriptions = 0
 
-topics = [
-    "phemex-raw",
-    "phemex-normalised",
-]
-
 async def subscribe(topic_id: str, client):
     global active_subscriptions
     async with broadcaster_lock:
@@ -33,15 +30,12 @@ async def subscribe(topic_id: str, client):
             if topic_id not in topic_broadcasters.keys():
                 await create_topic(topic_id)
                 client_subscriptions[topic_id] = [client]
-                if topic_id.endswith("-normalised"):
-                    await client.send_json(topic_broadcasters[topic_id].get_snapshot())
-            elif client in client_subscriptions[topic_id]:
-                # log("relay", f"client is already subscribed to {topic_id}")
-                return
-            else: 
-                client_subscriptions[topic_id].append(client)
-                if topic_id.endswith("-normalised"):
-                    await client.send_json(topic_broadcasters[topic_id].get_snapshot())
+            else:
+                if client in client_subscriptions[topic_id]:
+                    # log("relay", f"client is already subscribed to {topic_id}")
+                    return
+                else: 
+                    client_subscriptions[topic_id].append(client)
             async with connected_lock:
                 active_subscriptions += 1
 
@@ -96,8 +90,9 @@ async def remove_topic(topic_id):
     del tasks[topic_id]
 
 async def prestart():
-    for topic in topics:
-        await create_topic(topic)
+    for exchange in EXCHANGES:
+        for feed in FEEDS:
+            await create_topic(exchange + "-" + feed)
 
 def dump():
     slog(f"backlog: {get_backlog()}\tn_published: {n_published}\tactive_subscriptions: {active_subscriptions}")

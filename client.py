@@ -133,12 +133,14 @@ def parse_input(msg):
         command = args[0]
         if command == "exit":
             return msg
-    elif len(args) == 2:
+    elif len(args) == 3:
         print(args)
         if args[0] == "sub":
-            return json.dumps({"op": "subscribe", "topic": args[1]}).encode('utf-8')
+            return json.dumps({"op": "subscribe", "exchange": args[1], "feed": args[2]}).encode('utf-8')
         elif args[0] == "unsub":
-            return json.dumps({"op": "unsubscribe", "topic": args[1]}).encode('utf-8')
+            return json.dumps({"op": "unsubscribe", "exchange": args[1], "feed": args[2]}).encode('utf-8')
+    else:
+        print(f"error: invalid command")
 
 def main():
     start_time = time.time()
