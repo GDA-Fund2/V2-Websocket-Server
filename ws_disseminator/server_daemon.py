@@ -30,7 +30,7 @@ async def start_server(arg_port=None):
     loop.add_signal_handler(signal.SIGUSR1, lambda: asyncio.create_task(stop_server(10)))
     loop.add_signal_handler(signal.SIGUSR2, lambda: asyncio.create_task(dump(12)))
 
-    # await relay.prestart()
+    await relay.prestart() # Bandage fix - need to find out how make consumers connect to Kafka fast
 
     server_task = asyncio.create_task(run_server(host, port, ssl_context))
     await stop

@@ -48,8 +48,8 @@ async def unsubscribe(topic_id: str, client):
                 return
             else:
                 client_subscriptions[topic_id].remove(client)
-                if len(client_subscriptions[topic_id]) == 0:
-                    await remove_topic(topic_id)
+                # if len(client_subscriptions[topic_id]) == 0:
+                    # await remove_topic(topic_id)
             async with connected_lock:
                 active_subscriptions -= 1
 
@@ -92,7 +92,9 @@ async def remove_topic(topic_id):
 async def prestart():
     for exchange in EXCHANGES:
         for feed in FEEDS:
-            await create_topic(exchange + "-" + feed)
+            topic = exchange + "-" + feed
+            await create_topic(topic)
+            client_subscriptions[topic] = []
 
 def dump():
     slog(f"backlog: {get_backlog()}\tn_published: {n_published}\tactive_subscriptions: {active_subscriptions}")
