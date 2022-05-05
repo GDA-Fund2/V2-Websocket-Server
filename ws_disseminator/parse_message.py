@@ -21,6 +21,9 @@ def is_valid(message):
     
     if not message['feed'] in FEEDS:
         return 5
+    
+    if message['feed'] == "L1" and message['exchange'] != "bybit":
+        return 5
 
     return 0
 

@@ -1,5 +1,4 @@
 # Certificates and keys
-config.ini
 *.pem
 *.key
 *.cert

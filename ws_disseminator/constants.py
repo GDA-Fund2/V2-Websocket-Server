@@ -18,7 +18,8 @@ EXCHANGES = (
 FEEDS = (
     "normalised",
     "raw",
-    "trades"
+    "trades",
+    "L1"
 )
 
 OPS = (
