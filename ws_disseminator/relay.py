@@ -93,6 +93,8 @@ async def prestart():
     for exchange in EXCHANGES:
         for feed in FEEDS:
             topic = exchange + "-" + feed
+            if feed == "L1" and exchange != "bybit":
+                continue
             await create_topic(topic)
             client_subscriptions[topic] = []
 
