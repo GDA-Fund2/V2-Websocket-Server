@@ -5,11 +5,10 @@ import threading
 import json
 from configparser import ConfigParser
 
-from ..logger import log
+# from ..logger import log
 
 class AsyncKafkaConsumer():
     def __init__(self, topic):
-        self.exchange = "-".join(topic.split("-")[:-1])
         self.topic = topic
 
         config = ConfigParser()
@@ -48,7 +47,7 @@ class AsyncKafkaConsumer():
         return self.queue.qsize()
 
     def _consume(self):
-        msg = self.consumer.poll(timeout=10e-9)
+        msg = self.consumer.poll(0)
         if msg is None: 
             return
 
@@ -57,7 +56,7 @@ class AsyncKafkaConsumer():
                 sys.stderr.write('%% %s [%d] reached end at offset %d\n' %
                                 (msg.topic(), msg.partition(), msg.offset()))
             elif msg.error():
-                log(self.topic, "consumer encountered an error")
+                print(self.topic, "consumer encountered an error")
                 raise KafkaException(msg.error())
         else:
             return msg.value()
@@ -65,18 +64,33 @@ class AsyncKafkaConsumer():
     async def shutdown(self):
         self.consumer.close()
 
+current_quote_no = -1 
+n_incorrect = 0
+total = 0
 
-async def main():
-    consumer = AsyncKafkaConsumer("bybit")
-    print("Starting consumer...")
-    asyncio.create_task(consumer.run_consumer(threading.Event()))
-    print("Consumer started...")
+async def monitor(consumer):
+    global current_quote_no, n_incorrect, total
     while True:
         print("Awaiting message...")
         msg = await consumer.get()
         if msg:
-            print(msg)
+            msg_dict = json.loads(message)
+            if 'quote_no' in msg_dict.keys():
+                if current_quote_no == -1:
+                    current_quote_no = msg_dict['quote_no']
+                else:
+                    if msg_dict['quote_no'] != current_quote_no + 1:
+                        # print(f"error rate: {n_incorrect/total * 100}")
+                        n_incorrect += 1
+                print(current_quote_no)
+                current_quote_no = msg_dict['quote_no']
+                total += 1
 
+async def main():
+    consumer = AsyncKafkaConsumer("kraken-normalised")
+    print("Starting consumer...")
+    asyncio.create_task(monitor(consumer))
+    await consumer.run_consumer(threading.Event())
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -8,8 +8,8 @@ def is_valid(message):
         print(e)
         return 1
 
-    if not ("op" in message.keys() or
-                "exchange" in message.keys() or
+    if not ("op" in message.keys() and
+                "exchange" in message.keys() and
                 "feed" in message.keys()):
         return 2
 
