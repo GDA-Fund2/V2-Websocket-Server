@@ -19,7 +19,8 @@ FEEDS = (
     "normalised",
     "raw",
     "trades",
-    "L1"
+    "L1",
+    "ohlcv-m1"
 )
 
 OPS = (
