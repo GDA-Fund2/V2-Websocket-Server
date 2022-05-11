@@ -1,3 +1,4 @@
+import websockets
 import asyncio
 import json
 
@@ -50,6 +51,7 @@ class ClientHandler():
 async def handle_ws(ws):
     global client_id
     client = ClientHandler(ws, client_id = client_id)
+    log(client.id, "connected")
     client_id += 1
     try:
         listener = asyncio.create_task(_listen(client))
@@ -65,32 +67,35 @@ async def handle_ws(ws):
     finally:
         if not client.closed:
             await client.shutdown()
-            # print(f"client_{client.id} shutdown")
+            log(client.id, f"connection with {ws.remote_address[0]}:{ws.remote_address[1]} closed")
 
 async def _poll(client):
     await client.get_ws().wait_closed()
     
 async def _listen(client):
     ws = client.get_ws()
-    async for message in ws:
-        parse_code = parse_message.is_valid(message)
-        if parse_code != 0:
-            log("client_handler", f"client_{client.id}: {message}, error_code: {parse_code}")
-            await ws.send(json.dumps({"event": "error", "code": parse_code}))
-            continue
-        
-        message = json.loads(message)
-        topic = message['exchange'] + "-" + message['feed']
-        if parse_message.is_subscribe(message):
-            if not topic in client.get_subs():
-                await ws.send(json.dumps({"event": "subscribed", "topic": topic}))
-                await relay.subscribe(topic, client)
-                client.add_sub(topic)
-        elif parse_message.is_unsubscribe(message):
-            if topic in client.get_subs():
-                await ws.send(json.dumps({"event": "unsubscribed", "topic": topic}))
-                await relay.unsubscribe(topic, client)
-                client.remove_sub(topic)
-        else:
-            log("client_handler", f"client_{client.id}: {message}")
-            await ws.send(json.dumps({"event": "error", "code": 7}))
+    try:
+        async for message in ws:
+            parse_code = parse_message.is_valid(message)
+            if parse_code != 0:
+                log("client_handler", f"client_{client.id}: {message}, error_code: {parse_code}")
+                await ws.send(json.dumps({"event": "error", "code": parse_code}))
+                continue
+            
+            message = json.loads(message)
+            topic = message['exchange'] + "-" + message['feed']
+            if parse_message.is_subscribe(message):
+                if not topic in client.get_subs():
+                    await ws.send(json.dumps({"event": "subscribed", "topic": topic}))
+                    await relay.subscribe(topic, client)
+                    client.add_sub(topic)
+            elif parse_message.is_unsubscribe(message):
+                if topic in client.get_subs():
+                    await ws.send(json.dumps({"event": "unsubscribed", "topic": topic}))
+                    await relay.unsubscribe(topic, client)
+                    client.remove_sub(topic)
+            else:
+                log("client_handler", f"client_{client.id}: {message}")
+                await ws.send(json.dumps({"event": "error", "code": 7}))
+    except websockets.exceptions.ConnectionClosedError:
+        log(client.id, f"connection with {ws.remote_address[0]}:{ws.remote_address[1]} closed unexpectedly")

@@ -1,0 +1,9 @@
+services:
+  websocket_server:
+    image: gdafund/websocket_server:latest
+    volumes:
+      - type: bind
+        source: ./keys
+        target: /server/keys
+    ports:
+      - "30205:30205"

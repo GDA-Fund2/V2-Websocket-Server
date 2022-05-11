@@ -38,11 +38,8 @@ async def start_server(arg_port=None):
 
 async def run_server(host, port, ssl_context):
     slog("listening")
-    try:
-        async with websockets.serve(handle_ws, host, port, ssl=ssl_context):
-            await stop
-    except websockets.exceptions.ConnectionClosedError:
-        print(f"connection with {host}:{port} closed unexpectedly")
+    async with websockets.serve(handle_ws, host, port, ssl=ssl_context):
+        await stop
 
 async def stop_server(signum):
     slog(f"stop signal (signum {signum}) received.")
