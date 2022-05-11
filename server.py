@@ -1,4 +1,4 @@
-from ws_disseminator.server_daemon import start_server
+from src.server_daemon import start_server
 import asyncio
 import sys
 
