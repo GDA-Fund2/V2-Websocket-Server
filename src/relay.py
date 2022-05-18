@@ -97,6 +97,8 @@ async def prestart():
                 continue
             if feed == "ohlcv-m1" and exchange != "bybit":
                 continue
+            if feed == "indicators" and exchange != "uniswap":
+                continue
             await create_topic(topic)
             client_subscriptions[topic] = []
 

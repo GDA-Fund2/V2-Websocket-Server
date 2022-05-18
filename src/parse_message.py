@@ -27,6 +27,9 @@ def is_valid(message):
 
     if message['feed'] == "ohlcv-m1" and message['exchange'] != "bybit":
         return 5
+    
+    if message['feed'] == "indicators" and message['exchange'] != "uniswap":
+        return 5
 
     return 0
 

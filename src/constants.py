@@ -13,6 +13,7 @@ EXCHANGES = (
     "kucoin",
     "okex",
     "phemex",
+    "uniswap"
 )
 
 FEEDS = (
@@ -20,7 +21,8 @@ FEEDS = (
     "raw",
     "trades",
     "L1",
-    "ohlcv-m1"
+    "ohlcv-m1",
+    "indicators"
 )
 
 OPS = (
