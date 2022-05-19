@@ -99,11 +99,14 @@ async def prestart():
     for exchange in EXCHANGES:
         for feed in FEEDS:
             topic = exchange + "-" + feed
+            skip = False
             for special_feed in special:
                 if feed == special_feed[0] and exchange != special_feed[1]:
-                    continue
+                    skip = True
             if exchange == "ethereum" and feed != "raw":
-                continue
+                skip = True
+            if skip:
+                continue 
             await create_topic(topic)
             client_subscriptions[topic] = []
 
