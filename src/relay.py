@@ -89,15 +89,20 @@ async def remove_topic(topic_id):
         tasks[topic_id].cancel()
     del tasks[topic_id]
 
+special = [
+    ("L1", "bybit"),
+    ("ohlcv-m1", "bybit"),
+    ("indicators", "uniswap"),
+]
+
 async def prestart():
     for exchange in EXCHANGES:
         for feed in FEEDS:
             topic = exchange + "-" + feed
-            if feed == "L1" and exchange != "bybit":
-                continue
-            if feed == "ohlcv-m1" and exchange != "bybit":
-                continue
-            if feed == "indicators" and exchange != "uniswap":
+            for special_feed in special:
+                if feed == special_feed[0] and exchange != special_feed[1]:
+                    continue
+            if exchange == "ethereum" and feed != "raw":
                 continue
             await create_topic(topic)
             client_subscriptions[topic] = []

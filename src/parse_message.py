@@ -1,37 +1,47 @@
 import json
 from .constants import OPS, EXCHANGES, FEEDS
 
+INVALID_MESSAGE = 1
+NOT_ALL_FIELDS_PRESENT = 2
+INVALID_OP = 3
+INVALID_EXCHANGE = 4
+INVALID_FEED = 5
+SUCCESS = 0
+
 def is_valid(message):
     try:
         message = json.loads(message)
     except ValueError as e:
         print(e)
-        return 1
+        return INVALID_MESSAGE
 
     if not ("op" in message.keys() and
                 "exchange" in message.keys() and
                 "feed" in message.keys()):
-        return 2
+        return NOT_ALL_FIELDS_PRESENT
 
     if not message['op'] in OPS:
-        return 3
+        return INVALID_OP
     
     if not message['exchange'] in EXCHANGES:
-        return 4
+        return INVALID_EXCHANGE
     
     if not message['feed'] in FEEDS:
-        return 5
+        return INVALID_FEED
     
     if message['feed'] == "L1" and message['exchange'] != "bybit":
-        return 5
+        return INVALID_FEED
 
     if message['feed'] == "ohlcv-m1" and message['exchange'] != "bybit":
-        return 5
+        return INVALID_FEED
     
     if message['feed'] == "indicators" and message['exchange'] != "uniswap":
-        return 5
+        return INVALID_FEED
+    
+    if message['exchange'] == "ethereum" and message['feed'] != "raw":
+        return INVALID_FEED
 
-    return 0
+    return SUCCESS
 
 def is_subscribe(message):
     """Assumes that message is valid"""

@@ -51,7 +51,7 @@ class ClientHandler():
 async def handle_ws(ws):
     global client_id
     client = ClientHandler(ws, client_id = client_id)
-    log(client.id, "connected")
+    log(client.id, f"connection with {ws.remote_address[0]}:{ws.remote_address[1]} established")
     client_id += 1
     try:
         listener = asyncio.create_task(_listen(client))

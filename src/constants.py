@@ -13,7 +13,8 @@ EXCHANGES = (
     "kucoin",
     "okex",
     "phemex",
-    "uniswap"
+    "uniswap",
+    "ethereum"
 )
 
 FEEDS = (
