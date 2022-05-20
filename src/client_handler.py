@@ -68,7 +68,7 @@ async def handle_ws(ws):
     finally:
         if not client.closed:
             await client.shutdown()
-            logging.info(client.id, f"client_{client.id}: {ws.remote_address[0]}:{ws.remote_address[1]} disconnected")
+            logging.info(f"client_{client.id}: {ws.remote_address[0]}:{ws.remote_address[1]} disconnected")
 
 async def _poll(client):
     await client.get_ws().wait_closed()
@@ -101,5 +101,5 @@ async def _listen(client):
                 logging.info(f"client_{client.id}: {message}")
                 await ws.send(json.dumps({"event": "error", "code": 7}))
     except websockets.exceptions.ConnectionClosedError:
-        logging.info(client.id, f"connection with {ws.remote_address[0]}:{ws.remote_address[1]} closed unexpectedly")
+        logging.info(f"client_{client.id}: connection with {ws.remote_address[0]}:{ws.remote_address[1]} closed unexpectedly")
         await client.shutdown()
