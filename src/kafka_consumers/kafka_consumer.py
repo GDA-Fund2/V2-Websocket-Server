@@ -1,19 +1,24 @@
-from confluent_kafka import Consumer, KafkaError, KafkaException 
 import sys
-import asyncio
-import threading
 import json
-from configparser import ConfigParser
+import asyncio
+import logging
+import threading
 
-# from ..logger import log
+from datetime import datetime
+from configparser import ConfigParser
+from confluent_kafka import Consumer, KafkaError, KafkaException 
+
 
 class AsyncKafkaConsumer():
     def __init__(self, topic):
         self.topic = topic
+        start_time = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
 
         config = ConfigParser()
         config.read("config.ini")
         self.conf = dict(config['CONSUMER'])
+        self.conf['client.id'] = topic + '_kafka-python-consumer_' + start_time
+        self.conf['group.id'] = topic + '_ws-server-group_' + start_time
 
         self.consumer = Consumer(self.conf)
         self.consumer.subscribe([self.topic])
@@ -21,6 +26,7 @@ class AsyncKafkaConsumer():
         self.queue = asyncio.Queue()
         self.closed = False
         self.quote_no = None
+        self.started = False
 
     def __repr__(self):
         return f"AsyncKafkaConsumer: topic={self.topic}"
@@ -36,7 +42,7 @@ class AsyncKafkaConsumer():
                 if msg:
                     await self.queue.put(msg)
             except RuntimeError as e:
-                print(e)
+                logging.error(e)
     
     async def shutdown(self):
         self.closed = True
@@ -50,13 +56,16 @@ class AsyncKafkaConsumer():
         msg = self.consumer.poll(0)
         if msg is None: 
             return
+        
+        if not self.started:
+            self.started = True
+            logging.info(f"consumer for topic {self.topic} started consuming")
 
         if msg.error():
             if msg.error().code() == KafkaError._PARTITION_EOF:
-                sys.stderr.write('%% %s [%d] reached end at offset %d\n' %
-                                (msg.topic(), msg.partition(), msg.offset()))
+                logging.error(f'{self.topic}: %% %s [%d] reached end at offset %d\n' % (msg.topic(), msg.partition(), msg.offset()))
             elif msg.error():
-                print(self.topic, "consumer encountered an error")
+                logging.error(f"{self.topic}: consumer encountered an error")
                 raise KafkaException(msg.error())
         else:
             return msg.value()
@@ -64,32 +73,9 @@ class AsyncKafkaConsumer():
     async def shutdown(self):
         self.consumer.close()
 
-current_quote_no = -1 
-n_incorrect = 0
-total = 0
-
-async def monitor(consumer):
-    global current_quote_no, n_incorrect, total
-    while True:
-        print("Awaiting message...")
-        msg = await consumer.get()
-        if msg:
-            msg_dict = json.loads(message)
-            if 'quote_no' in msg_dict.keys():
-                if current_quote_no == -1:
-                    current_quote_no = msg_dict['quote_no']
-                else:
-                    if msg_dict['quote_no'] != current_quote_no + 1:
-                        # print(f"error rate: {n_incorrect/total * 100}")
-                        n_incorrect += 1
-                print(current_quote_no)
-                current_quote_no = msg_dict['quote_no']
-                total += 1
-
 async def main():
     consumer = AsyncKafkaConsumer("kraken-normalised")
-    print("Starting consumer...")
-    asyncio.create_task(monitor(consumer))
+    logging.info("Starting consumer...")
     await consumer.run_consumer(threading.Event())
 
 if __name__ == "__main__":

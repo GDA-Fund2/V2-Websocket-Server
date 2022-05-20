@@ -1,8 +1,8 @@
-import websockets
 import asyncio
+import logging
+import websockets
 import itertools
 
-from .logger import log, slog
 from .kafka_consumers import async_kafka
 from .constants import EXCHANGES, FEEDS
 
@@ -32,7 +32,6 @@ async def subscribe(topic_id: str, client):
                 client_subscriptions[topic_id] = [client]
             else:
                 if client in client_subscriptions[topic_id]:
-                    # log("relay", f"client is already subscribed to {topic_id}")
                     return
                 else: 
                     client_subscriptions[topic_id].append(client)
@@ -44,12 +43,9 @@ async def unsubscribe(topic_id: str, client):
     async with broadcaster_lock:
         async with subscriptions_lock:
             if client not in client_subscriptions[topic_id]:
-                # log("relay", f"client is not subscribed to {topic_id}")
                 return
             else:
                 client_subscriptions[topic_id].remove(client)
-                # if len(client_subscriptions[topic_id]) == 0:
-                    # await remove_topic(topic_id)
             async with connected_lock:
                 active_subscriptions -= 1
 
@@ -105,10 +101,12 @@ async def prestart():
                     skip = True
             if exchange == "ethereum" and feed != "raw":
                 skip = True
+            if exchange == "uniswap" and feed != "indicators":
+                skip = True
             if skip:
                 continue 
             await create_topic(topic)
             client_subscriptions[topic] = []
 
 def dump():
-    slog(f"backlog: {get_backlog()}\tn_published: {n_published}\tactive_subscriptions: {active_subscriptions}")
+    logging.info(f"backlog: {get_backlog()}\tn_published: {n_published}\tactive_subscriptions: {active_subscriptions}")

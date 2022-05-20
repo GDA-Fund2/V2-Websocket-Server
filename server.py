@@ -1,6 +1,14 @@
-from src.server_daemon import start_server
-import asyncio
 import sys
+import asyncio
+import logging
+
+from src.server_daemon import start_server
+
+logging.basicConfig(
+    stream=sys.stdout,
+    level=logging.INFO,
+    format="[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s",
+)
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

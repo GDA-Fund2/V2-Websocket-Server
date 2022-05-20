@@ -1,4 +1,6 @@
 import json
+import logging
+
 from .constants import OPS, EXCHANGES, FEEDS
 
 INVALID_MESSAGE = 1
@@ -12,7 +14,7 @@ def is_valid(message):
     try:
         message = json.loads(message)
     except ValueError as e:
-        print(e)
+        logging.error(e)
         return INVALID_MESSAGE
 
     if not ("op" in message.keys() and

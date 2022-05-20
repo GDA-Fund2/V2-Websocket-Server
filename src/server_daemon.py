@@ -1,13 +1,13 @@
-import websockets
-import asyncio
 import ssl
 import signal
+import websockets
+import asyncio
 import functools
-from configparser import ConfigParser
+import logging
 
+from configparser import ConfigParser
 from .client_handler import handle_ws
 from . import relay
-from .logger import slog, log
 
 
 CONFIG_PATH = "config.ini"
@@ -34,20 +34,20 @@ async def start_server(arg_port=None):
 
     server_task = asyncio.create_task(run_server(host, port, ssl_context))
     await stop
-    slog("shut down")
+    logging.info("shut down")
 
 async def run_server(host, port, ssl_context):
-    slog("listening")
+    logging.info("listening")
     async with websockets.serve(handle_ws, host, port, ssl=ssl_context):
         await stop
 
 async def stop_server(signum):
-    slog(f"stop signal (signum {signum}) received.")
+    logging.info(f"stop signal (signum {signum}) received.")
     stop.set_result(True)
-    slog("stopping...")
+    logging.info("stopping...")
 
 async def dump(signum):
-    slog(f"dump signal (signum {signum}) received")
+    logging.info(f"dump signal (signum {signum}) received")
     relay.dump()
 
 def _read_config():
