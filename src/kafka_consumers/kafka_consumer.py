@@ -59,7 +59,7 @@ class AsyncKafkaConsumer():
         
         if not self.started:
             self.started = True
-            logging.info(f"consumer for topic {self.topic} started consuming")
+            logging.info(f"{self.topic} consuming")
 
         if msg.error():
             if msg.error().code() == KafkaError._PARTITION_EOF:

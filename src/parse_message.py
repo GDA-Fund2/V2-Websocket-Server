@@ -14,7 +14,6 @@ def is_valid(message):
     try:
         message = json.loads(message)
     except ValueError as e:
-        logging.error(e)
         return INVALID_MESSAGE
 
     if not ("op" in message.keys() and
@@ -36,8 +35,8 @@ def is_valid(message):
 
     if message['feed'] == "ohlcv-m1" and message['exchange'] != "bybit":
         return INVALID_FEED
-    
-    if message['feed'] == "indicators" and message['exchange'] != "uniswap":
+
+    if message['exchange'] == "uniswap" and message['feed'] not in ("indicators", "raw"):
         return INVALID_FEED
     
     if message['exchange'] == "ethereum" and message['feed'] != "raw":

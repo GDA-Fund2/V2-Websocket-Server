@@ -13,7 +13,7 @@ async def get_consumer(topic):
     event = threading.Event()
     asyncio.create_task(consumer.run_consumer(event))
     events[topic] = {'consumer': consumer, 'event': event}
-    logging.info(f"async kafka: {topic} consumer started")
+    logging.info(f"{topic} instantiated")
     return consumer
 
 async def shutdown_topic(topic):
@@ -21,4 +21,4 @@ async def shutdown_topic(topic):
         events[topic]['event'].set()
         await events[topic]['consumer'].shutdown()
         del events[topic]
-    logging.info(f"async_kafka: {topic} consumer stopped")
+    logging.info(f"{topic} stopped")

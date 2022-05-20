@@ -88,7 +88,7 @@ async def remove_topic(topic_id):
 special = [
     ("L1", "bybit"),
     ("ohlcv-m1", "bybit"),
-    ("indicators", "uniswap"),
+    ("indicators", "uniswap")
 ]
 
 async def prestart():
@@ -101,7 +101,7 @@ async def prestart():
                     skip = True
             if exchange == "ethereum" and feed != "raw":
                 skip = True
-            if exchange == "uniswap" and feed != "indicators":
+            if exchange == "uniswap" and feed not in  ("indicators", "raw"):
                 skip = True
             if skip:
                 continue 
