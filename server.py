@@ -1,4 +1,5 @@
 import sys
+import uvloop
 import asyncio
 import logging
 
@@ -15,4 +16,5 @@ if __name__ == "__main__":
         port = int(sys.argv[1])
     else:
         port = None
+    uvloop.install()
     asyncio.run(start_server(port), debug=False)
