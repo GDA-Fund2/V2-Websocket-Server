@@ -4,6 +4,7 @@ import websockets
 import asyncio
 import functools
 import logging
+import http
 
 from configparser import ConfigParser
 from .client_handler import handle_ws
@@ -36,9 +37,16 @@ async def start_server(arg_port=None):
     await stop
     logging.info("shut down")
 
+async def handle_request(path, request_headers):
+    if path == "/health":
+        return http.HTTPStatus.OK, [], b"OK\n"
+    if path == "/ready":
+        return http.HTTPStatus.OK, [], b"OK\n"
+    
+
 async def run_server(host, port, ssl_context):
     logging.info("listening")
-    async with websockets.serve(handle_ws, host, port, ssl=ssl_context):
+    async with websockets.serve(handle_ws, host, port, ssl=ssl_context, process_request=handle_request):
         await stop
 
 async def stop_server(signum):
