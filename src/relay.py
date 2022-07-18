@@ -3,7 +3,7 @@ import logging
 import websockets
 import itertools
 
-from .kafka_consumers import async_kafka
+from .redis_consumers import async_redis
 from .constants import EXCHANGES, FEEDS
 
 # {topic_id: KafkaConsumer}
@@ -63,7 +63,7 @@ def get_backlog():
     return sum([x.size() for x in topic_broadcasters.values()])
 
 async def create_topic(topic_id):
-    consumer = await async_kafka.get_consumer(topic_id)
+    consumer = await async_redis.get_consumer(topic_id)
     if not consumer:
         # This will be replaced by a message parser in the future.
         subscriptions_lock.release()
@@ -77,7 +77,7 @@ async def create_topic(topic_id):
 
 async def remove_topic(topic_id):
     """Precondition: Topic is empty"""
-    await async_kafka.shutdown_topic(topic_id)
+    await async_redis.shutdown_topic(topic_id)
 
     del client_subscriptions[topic_id]
     del topic_broadcasters[topic_id]

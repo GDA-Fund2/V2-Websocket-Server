@@ -1,3 +1,5 @@
+aioredis==2.0.1
 confluent_kafka==1.8.2
-websockets==10.1
+python-dotenv==0.20.0
 uvloop==0.16.0
+websockets==10.1
