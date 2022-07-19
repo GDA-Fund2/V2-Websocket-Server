@@ -47,7 +47,7 @@ class AsyncRedisConsumer():
     def get_redis_pool(self):
         try:
             pool = aioredis.from_url(
-                (f"redis://{self.conf['REDIS_HOST']}"), encoding='utf-8', decode_responses=True)
+                (f"rediss://{self.conf['REDIS_HOST']}"), encoding='utf-8', decode_responses=True)
             return pool
         except ConnectionRefusedError as e:
             print('cannot connect to redis on:', self.redis_host, self.redis_port)
