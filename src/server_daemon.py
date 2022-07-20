@@ -46,7 +46,7 @@ async def handle_request(path, request_headers):
 
 async def run_server(host, port, ssl_context):
     logging.info("listening")
-    async with websockets.serve(handle_ws, host, port, ssl=ssl_context, process_request=handle_request):
+    async with websockets.serve(handle_ws, host, port, process_request=handle_request):
         await stop
 
 async def stop_server(signum):

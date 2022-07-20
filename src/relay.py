@@ -53,6 +53,7 @@ async def run_topic(topic_id):
     global n_published
     while not topic_broadcasters[topic_id].closed:
         msg = await topic_broadcasters[topic_id].get()
+        #print(msg)
         subs = client_subscriptions[topic_id]
         sockets = map(lambda client: client.get_ws(), subs)
         websockets.broadcast(sockets, msg)

@@ -9,5 +9,6 @@ COPY requirements.txt requirements.txt
 RUN pip3 install -U setuptools pip \
         && pip3 install --no-cache-dir -r requirements.txt
 COPY config.ini server.py ./
+EXPOSE 30205
 ENTRYPOINT ["python3"]
 CMD ["server.py"]

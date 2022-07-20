@@ -1,3 +1,4 @@
+import queue
 import sys
 import json
 import asyncio
@@ -7,7 +8,6 @@ import aioredis
 
 from datetime import datetime
 from configparser import ConfigParser
-from confluent_kafka import Consumer, KafkaError, KafkaException 
 from dotenv import dotenv_values
 
 def get_config():
@@ -42,12 +42,12 @@ class AsyncRedisConsumer():
         self.started = False
 
     def __repr__(self):
-        return f"AsyncKafkaConsumer: topic={self.topic}"
+        return f"AsyncRedisConsumer: topic={self.topic}"
 
     def get_redis_pool(self):
         try:
             pool = aioredis.from_url(
-                (f"rediss://{self.conf['REDIS_HOST']}"), encoding='utf-8', decode_responses=True)
+                (f"redis://{self.conf['REDIS_HOST']}"), encoding='utf-8', decode_responses=True)
             return pool
         except ConnectionRefusedError as e:
             print('cannot connect to redis on:', self.redis_host, self.redis_port)
